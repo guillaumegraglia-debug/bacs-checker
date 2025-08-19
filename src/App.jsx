@@ -1,10 +1,5 @@
-function App() {
+export default function App() {
   return (
-    <div>
-      <h1>Hello Guillaume 👋</h1>
-      <p>Ton app React tourne bien 🎉</p>
-    </div>
-  );
+    <h1 style={{ color: "red" }}>Hello, ça marche !</h1>
+  )
 }
-
-export default App;
