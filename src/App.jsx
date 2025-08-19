@@ -7,7 +7,6 @@ export default function App() {
         <h1>Vérification Décret BACS</h1>
         <p>Complétez les informations pour savoir si vous êtes assujetti.</p>
 
-        {/* >>> ICI on rend le formulaire <<< */}
         <BACSForm />
       </div>
     </div>
