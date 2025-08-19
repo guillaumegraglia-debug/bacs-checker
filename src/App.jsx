@@ -170,33 +170,33 @@ export default function BACSForm() {
           <label className="block mb-2 font-medium">Situations particulières</label>
           <div className="mb-4 space-y-1">
             <label className="block">
-              <input
+              <Input
                 type="checkbox"
                 checked={formData.heritage}
                 onChange={(e) =>
                   setFormData({ ...formData, heritage: e.target.checked })
                 }
-              />{" "}
+              />
               Bâtiment classé / patrimoine
             </label>
             <label className="block">
-              <input
+              <Input
                 type="checkbox"
                 checked={formData.technicalIssue}
                 onChange={(e) =>
                   setFormData({ ...formData, technicalIssue: e.target.checked })
                 }
-              />{" "}
+              />
               Impossibilité technique
             </label>
             <label className="block">
-              <input
+              <Input
                 type="checkbox"
                 checked={formData.roi}
                 onChange={(e) =>
                   setFormData({ ...formData, roi: e.target.checked })
                 }
-              />{" "}
+              />
               ROI estimé &gt; 10 ans (déclaratif)
             </label>
           </div>
