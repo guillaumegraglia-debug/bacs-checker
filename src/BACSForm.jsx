@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 export default function BACSForm() {
   const [formData, setFormData] = useState({
@@ -11,196 +11,343 @@ export default function BACSForm() {
     ecs: "",
     heritage: false,
     technicalIssue: false,
-    roi: false,
+    roi: false, // coche "ROI > 10 ans" déclaratif
     gtb: "none",
   });
-
-  const [result, setResult] = useState("");
 
   const numOrZero = (v) => {
     const n = Number(v);
     return Number.isFinite(n) ? n : 0;
   };
 
-  // Calcul de la puissance totale
   const totalPower =
     numOrZero(formData.heating) +
     numOrZero(formData.cooling) +
     numOrZero(formData.ventilation) +
     numOrZero(formData.ecs);
 
-  // Fonction de calcul de l'assujettissement
-  const calculateResult = () => {
-    if (!formData.buildingType) {
-      setResult("Veuillez sélectionner un type de bâtiment.");
-      return;
-    }
+  // --- Module 1 : règle d'assujettissement / échéance
+  const isTertiaire = formData.buildingType === "tertiaire";
+  const assujetti = isTertiaire && totalPower > 290;
+  const echeance =
+    formData.constructionDate === "after2021"
+      ? "Obligation dès la mise en service (bâtiment neuf)."
+      : formData.constructionDate === "before2021"
+      ? "Obligation au 1er janvier 2025 (bâtiment existant)."
+      : "Précisez la date de construction pour déterminer l'échéance exacte.";
 
-    if (formData.buildingType !== "tertiaire") {
-      setResult("❌ Non assujetti : bâtiment non tertiaire.");
-      return;
-    }
+  // --- Module 2 : paramètres économiques (éditables)
+  const [eco, setEco] = useState({
+    capexPerKW: 80,       // €/kW (par défaut, ajustable)
+    cvcKwhPerKW: 1200,    // kWh/kW/an si conso inconnue (approx.)
+    energyPrice: 0.16,    // €/kWh moyen
+    savingPct: 15,        // % d'économie CVC
+    knownCvcKwh: "",      // conso CVC réelle si connue (kWh/an)
+  });
 
-    if (!Number.isFinite(totalPower) || totalPower <= 290) {
-      setResult("❌ Non assujetti : puissance totale inférieure ou égale à 290 kW.");
-      return;
-    }
+  // Estimation de conso CVC annuelle (kWh/an)
+  const cvcKwhYear = useMemo(() => {
+    const known = numOrZero(eco.knownCvcKwh);
+    if (known > 0) return known;
+    return totalPower * eco.cvcKwhPerKW;
+  }, [eco.knownCvcKwh, eco.cvcKwhPerKW, totalPower]);
 
-    let message = "";
-    if (formData.constructionDate === "after2021") {
-      message = "✅ Assujetti : bâtiment neuf, obligation immédiate (dès construction).";
-    } else if (formData.constructionDate === "before2021") {
-      message = "✅ Assujetti : bâtiment existant, obligation au 1er janvier 2025.";
-    } else {
-      message = "✅ Assujetti : précisez la date de construction pour l'échéance exacte.";
-    }
+  // CAPEX estimé (ordre de grandeur)
+  const capex = useMemo(() => {
+    return totalPower * eco.capexPerKW; // € (simplifié)
+  }, [totalPower, eco.capexPerKW]);
 
-    if (formData.heritage || formData.technicalIssue || formData.roi) {
-      message += " ⚠️ Dérogation potentielle (justificatifs requis).";
-    }
-    setResult(message);
-  };
+  // Économies annuelles estimées (en €)
+  const annualSavingEuro = useMemo(() => {
+    const gain = (eco.savingPct / 100) * cvcKwhYear * eco.energyPrice;
+    return Math.max(0, gain);
+  }, [eco.savingPct, cvcKwhYear, eco.energyPrice]);
+
+  // ROI simple (années)
+  const roiYears = useMemo(() => {
+    if (annualSavingEuro <= 0) return Infinity;
+    return capex / annualSavingEuro;
+  }, [capex, annualSavingEuro]);
+
+  // Gap de classe GTB
+  const requiredClass = "B";
+  const currentClass = formData.gtb === "none" ? "aucune" : formData.gtb;
+  const classUpgrade =
+    formData.gtb === "A" || formData.gtb === "B"
+      ? "Conforme (vérifier fonctionnalités minimales)."
+      : `Mise à niveau requise vers classe ${requiredClass}.`;
+
+  // Dérogation potentielle (déclarée ou calculée)
+  const derogationByROI = roiYears > 10 || formData.roi === true;
+  const derogationByTech = formData.technicalIssue === true;
+  const derogationByHeritage = formData.heritage === true;
+  const derogationPossible =
+    assujetti && (derogationByROI || derogationByTech || derogationByHeritage);
+
+  // Messages statut
+  const statutMessage = !isTertiaire
+    ? "❌ Non assujetti : bâtiment non tertiaire."
+    : totalPower <= 290
+    ? "❌ Non assujetti : puissance totale ≤ 290 kW."
+    : "✅ Assujetti : décret BACS applicable.";
 
   return (
-    <div className="max-w-2xl w-full mx-auto p-6 bg-white shadow-xl rounded-2xl">
-      <h1 className="text-2xl font-bold mb-2">
+    <div className="max-w-4xl w-full mx-auto p-6 bg-white shadow-xl rounded-2xl">
+      <h1 className="text-2xl font-bold mb-1">
         Vérifiez si votre bâtiment est concerné par le décret BACS
       </h1>
       <p className="text-sm text-gray-600 mb-6">
-        Renseignez les informations pour calculer votre statut d'assujettissement.
+        Module 1 (éligibilité) + Module 2 (diagnostic détaillé).
       </p>
 
-      {/* Nom du bâtiment */}
-      <label className="block mb-2 font-medium">Nom du bâtiment</label>
-      <input
-        type="text"
-        className="w-full p-2 border rounded mb-4"
-        placeholder="Ex : Tour Alpha"
-        value={formData.buildingName}
-        onChange={(e) =>
-          setFormData({ ...formData, buildingName: e.target.value })
-        }
-      />
-
-      {/* Type de bâtiment */}
-      <label className="block mb-2 font-medium">Type de bâtiment</label>
-      <select
-        className="w-full p-2 border rounded mb-4"
-        value={formData.buildingType}
-        onChange={(e) =>
-          setFormData({ ...formData, buildingType: e.target.value })
-        }
-      >
-        <option value="">-- Sélectionnez --</option>
-        <option value="tertiaire">Tertiaire</option>
-        <option value="autre">Autre</option>
-      </select>
-
-      {/* Date de construction */}
-      <label className="block mb-2 font-medium">Date de construction</label>
-      <select
-        className="w-full p-2 border rounded mb-4"
-        value={formData.constructionDate}
-        onChange={(e) =>
-          setFormData({ ...formData, constructionDate: e.target.value })
-        }
-      >
-        <option value="">-- Sélectionnez --</option>
-        <option value="before2021">Avant 21 juillet 2021</option>
-        <option value="after2021">Après 21 juillet 2021</option>
-      </select>
-
-      {/* Puissances */}
-      {[
-        { key: "heating", label: "Chauffage (kW)" },
-        { key: "cooling", label: "Climatisation (kW)" },
-        { key: "ventilation", label: "Ventilation (kW)" },
-        { key: "ecs", label: "ECS couplée (kW) - optionnel" },
-      ].map(({ key, label }) => (
-        <div key={key} className="mb-4">
-          <label className="block mb-2 font-medium">{label}</label>
+      {/* --- FORMULAIRE --- */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <div>
+          <label className="block mb-2 font-medium">Nom du bâtiment</label>
           <input
-            type="number"
-            inputMode="decimal"
-            className="w-full p-2 border rounded"
-            value={formData[key]}
+            type="text"
+            className="w-full p-2 border rounded mb-4"
+            placeholder="Ex : Tour Alpha"
+            value={formData.buildingName}
             onChange={(e) =>
-              setFormData({ ...formData, [key]: e.target.value })
+              setFormData({ ...formData, buildingName: e.target.value })
             }
-            placeholder="0"
-            min="0"
           />
+
+          <label className="block mb-2 font-medium">Type de bâtiment</label>
+          <select
+            className="w-full p-2 border rounded mb-4"
+            value={formData.buildingType}
+            onChange={(e) =>
+              setFormData({ ...formData, buildingType: e.target.value })
+            }
+          >
+            <option value="">-- Sélectionnez --</option>
+            <option value="tertiaire">Tertiaire</option>
+            <option value="autre">Autre</option>
+          </select>
+
+          <label className="block mb-2 font-medium">Date de construction</label>
+          <select
+            className="w-full p-2 border rounded mb-4"
+            value={formData.constructionDate}
+            onChange={(e) =>
+              setFormData({ ...formData, constructionDate: e.target.value })
+            }
+          >
+            <option value="">-- Sélectionnez --</option>
+            <option value="before2021">Avant 21 juillet 2021</option>
+            <option value="after2021">Après 21 juillet 2021</option>
+          </select>
+
+          {[
+            { key: "heating", label: "Chauffage (kW)" },
+            { key: "cooling", label: "Climatisation (kW)" },
+            { key: "ventilation", label: "Ventilation (kW)" },
+            { key: "ecs", label: "ECS couplée (kW) - optionnel" },
+          ].map(({ key, label }) => (
+            <div key={key} className="mb-4">
+              <label className="block mb-2 font-medium">{label}</label>
+              <input
+                type="number"
+                inputMode="decimal"
+                className="w-full p-2 border rounded"
+                value={formData[key]}
+                onChange={(e) =>
+                  setFormData({ ...formData, [key]: e.target.value })
+                }
+                placeholder="0"
+                min="0"
+              />
+            </div>
+          ))}
+
+          <p className="mb-4 font-semibold">
+            Puissance totale : {isNaN(totalPower) ? "-" : totalPower} kW
+          </p>
+
+          <label className="block mb-2 font-medium">Situations particulières</label>
+          <div className="mb-4 space-y-1">
+            <label className="block">
+              <input
+                type="checkbox"
+                checked={formData.heritage}
+                onChange={(e) =>
+                  setFormData({ ...formData, heritage: e.target.checked })
+                }
+              />{" "}
+              Bâtiment classé / patrimoine
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                checked={formData.technicalIssue}
+                onChange={(e) =>
+                  setFormData({ ...formData, technicalIssue: e.target.checked })
+                }
+              />{" "}
+              Impossibilité technique
+            </label>
+            <label className="block">
+              <input
+                type="checkbox"
+                checked={formData.roi}
+                onChange={(e) =>
+                  setFormData({ ...formData, roi: e.target.checked })
+                }
+              />{" "}
+              ROI estimé &gt; 10 ans (déclaratif)
+            </label>
+          </div>
+
+          <label className="block mb-2 font-medium">Système GTB existant</label>
+          <select
+            className="w-full p-2 border rounded mb-6"
+            value={formData.gtb}
+            onChange={(e) => setFormData({ ...formData, gtb: e.target.value })}
+          >
+            <option value="none">Aucun</option>
+            <option value="D">Classe D</option>
+            <option value="C">Classe C</option>
+            <option value="B">Classe B</option>
+            <option value="A">Classe A</option>
+          </select>
         </div>
-      ))}
 
-      <p className="mb-4 font-semibold">
-        Puissance totale : {isNaN(totalPower) ? "-" : totalPower} kW
-      </p>
+        {/* --- DIAGNOSTIC AUTOMATIQUE (Module 2) --- */}
+        <div className="p-4 border rounded-lg bg-gray-50">
+          <h2 className="text-lg font-bold mb-2">Diagnostic automatique</h2>
+          <p className="mb-2">{statutMessage}</p>
+          {assujetti && (
+            <>
+              <p className="mb-4 text-sm text-gray-700">{echeance}</p>
 
-      {/* Situations particulières */}
-      <label className="block mb-2 font-medium">Situations particulières</label>
-      <div className="mb-4 space-y-1">
-        <label className="block">
-          <input
-            type="checkbox"
-            checked={formData.heritage}
-            onChange={(e) =>
-              setFormData({ ...formData, heritage: e.target.checked })
-            }
-          />{" "}
-          Bâtiment classé / patrimoine
-        </label>
-        <label className="block">
-          <input
-            type="checkbox"
-            checked={formData.technicalIssue}
-            onChange={(e) =>
-              setFormData({ ...formData, technicalIssue: e.target.checked })
-            }
-          />{" "}
-          Impossibilité technique
-        </label>
-        <label className="block">
-          <input
-            type="checkbox"
-            checked={formData.roi}
-            onChange={(e) =>
-              setFormData({ ...formData, roi: e.target.checked })
-            }
-          />{" "}
-          ROI estimé &gt; 10 ans
-        </label>
+              <div className="mb-4 p-3 bg-white border rounded">
+                <p className="font-semibold">Classe GTB minimale : B</p>
+                <p className="text-sm text-gray-700">
+                  Existant : <strong>{currentClass}</strong> → {classUpgrade}
+                </p>
+              </div>
+
+              <div className="mb-4 p-3 bg-white border rounded">
+                <p className="font-semibold mb-1">Fonctionnalités minimales (arrêté 24/04/2023) :</p>
+                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                  <li>Mesure & enregistrement continu des consommations (CVC/ECS/éclairage si intégré).</li>
+                  <li>Adaptation automatique à la demande (occupation, horaires, consignes).</li>
+                  <li>Détection des dérives & alertes d’inefficience.</li>
+                  <li>Arrêt/démarrage & régulation par zone/fonction.</li>
+                  <li>Interopérabilité via protocoles ouverts (BACnet/KNX/Modbus...).</li>
+                </ul>
+              </div>
+
+              <div className="mb-4 p-3 bg-white border rounded">
+                <p className="font-semibold mb-2">Mini-éco (paramétrable)</p>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <label className="block">
+                    CAPEX (€/kW)
+                    <input
+                      type="number"
+                      className="w-full p-2 border rounded"
+                      value={eco.capexPerKW}
+                      onChange={(e) =>
+                        setEco({ ...eco, capexPerKW: Number(e.target.value) })
+                      }
+                      min="0"
+                    />
+                  </label>
+                  <label className="block">
+                    Conso CVC (kWh/kW/an)
+                    <input
+                      type="number"
+                      className="w-full p-2 border rounded"
+                      value={eco.cvcKwhPerKW}
+                      onChange={(e) =>
+                        setEco({ ...eco, cvcKwhPerKW: Number(e.target.value) })
+                      }
+                      min="0"
+                    />
+                  </label>
+                  <label className="block">
+                    Prix énergie (€/kWh)
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-full p-2 border rounded"
+                      value={eco.energyPrice}
+                      onChange={(e) =>
+                        setEco({ ...eco, energyPrice: Number(e.target.value) })
+                      }
+                      min="0"
+                    />
+                  </label>
+                  <label className="block">
+                    Gain attendu (%)
+                    <input
+                      type="number"
+                      className="w-full p-2 border rounded"
+                      value={eco.savingPct}
+                      onChange={(e) =>
+                        setEco({ ...eco, savingPct: Number(e.target.value) })
+                      }
+                      min="0"
+                      max="40"
+                    />
+                  </label>
+                  <label className="block col-span-2">
+                    Conso CVC réelle (kWh/an) (optionnel)
+                    <input
+                      type="number"
+                      className="w-full p-2 border rounded"
+                      value={eco.knownCvcKwh}
+                      onChange={(e) =>
+                        setEco({ ...eco, knownCvcKwh: e.target.value })
+                      }
+                      min="0"
+                      placeholder="Laisser vide pour estimer"
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-3 text-sm">
+                  <p>CAPEX estimé : <strong>{capex.toLocaleString("fr-FR")} €</strong></p>
+                  <p>Économies annuelles estimées : <strong>{annualSavingEuro.toLocaleString("fr-FR")} €</strong></p>
+                  <p>ROI simple :{" "}
+                    <strong>
+                      {roiYears === Infinity ? "—" : roiYears.toFixed(1)} an(s)
+                    </strong>{" "}
+                    {roiYears > 10 && <span className="text-amber-600">(> 10 ans)</span>}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-4 p-3 bg-white border rounded">
+                <p className="font-semibold mb-1">Plan d’actions recommandé</p>
+                <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
+                  <li>Audit express : points de comptage, segmentation des zones, relevé protocoles existants.</li>
+                  <li>Cadrage GTB : exigences **classe B**, fonctionnalités arrêtées, interopérabilité (BACnet/KNX/Modbus).</li>
+                  <li>Spécifications & CCTP : architecture, bus, cybersécurité, recette & KPIs.</li>
+                  <li>Déploiement par zones, réglages, formation exploitation.</li>
+                  <li>Suivi de performance (3–6 mois), ajustements fins.</li>
+                </ol>
+              </div>
+
+              {derogationPossible && (
+                <div className="p-3 border rounded bg-amber-50">
+                  <p className="font-semibold text-amber-700">Dérogation potentielle</p>
+                  <ul className="list-disc list-inside text-sm text-amber-800">
+                    {derogationByROI && <li>TRI &gt; 10 ans (à documenter : hypothèses, prix énergie, gains).</li>}
+                    {derogationByTech && <li>Impossibilité technique (justifications + variantes étudiées).</li>}
+                    {derogationByHeritage && <li>Patrimoine protégé (avis ABF / contraintes spécifiques).</li>}
+                  </ul>
+                  <p className="text-xs mt-1">
+                    Remarque : une **note de faisabilité** et un **mémo économique** sont nécessaires pour constituer le dossier.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-
-      {/* GTB existant */}
-      <label className="block mb-2 font-medium">Système GTB existant</label>
-      <select
-        className="w-full p-2 border rounded mb-6"
-        value={formData.gtb}
-        onChange={(e) => setFormData({ ...formData, gtb: e.target.value })}
-      >
-        <option value="none">Aucun</option>
-        <option value="D">Classe D</option>
-        <option value="C">Classe C</option>
-        <option value="B">Classe B</option>
-        <option value="A">Classe A</option>
-      </select>
-
-      {/* Bouton */}
-      <button
-        onClick={calculateResult}
-        className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700"
-      >
-        Calculer mon statut
-      </button>
-
-      {/* Résultat */}
-      {result && (
-        <div className="mt-6 p-4 border rounded bg-gray-100">
-          <h2 className="text-lg font-bold">Résultat :</h2>
-          <p>{result}</p>
-        </div>
-      )}
     </div>
   );
 }
