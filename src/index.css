@@ -1,3 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: theme('fontFamily.sans');
+    color: theme('colors.gray.800');
+    background-color: theme('colors.gray.50');
+  }
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
