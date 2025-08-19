@@ -1,111 +1,12 @@
-/* Fond dégradé global */
-.page-bg {
-  min-height: 100vh;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 40px;
-  background: linear-gradient(135deg, #e0f2fe, #f0fdf4);
-  font-family: 'Inter', sans-serif;
-}
-
-/* Container principal */
-.app-container {
-  max-width: 1100px;
-  width: 100%;
-}
-
-/* Carte glassmorphism */
-.card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-  padding: 32px;
-  margin-top: 20px;
-}
-
-/* Titre dégradé */
-.title {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 800;
-  background: linear-gradient(90deg, #2563eb, #22c55e);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Texte intro */
-.intro {
-  font-size: 1.1rem;
-  margin-bottom: 20px;
-  color: #374151;
-}
-
-/* Grille formulaire */
-.form-row {
+.form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 20px;
   margin-bottom: 20px;
 }
+
 @media (max-width: 900px) {
-  .form-row { grid-template-columns: 1fr; }
-}
-
-.label {
-  display: block;
-  font-weight: 600;
-  color: #111827;
-  margin: 14px 0 6px;
-}
-
-.input, .select {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid #d1d5db;
-  font-size: 16px;
-  outline: none;
-  transition: all 0.2s ease;
-}
-.input:focus, .select:focus {
-  box-shadow: 0 0 0 3px rgba(56,189,248,.35);
-  border-color: #38bdf8;
-}
-
-button.btn {
-  display: block;
-  margin: 0 auto;
-  margin-top: 10px;
-  background: linear-gradient(90deg, #2563eb, #22c55e);
-  color: #fff;
-  font-weight: 700;
-  border: 0;
-  padding: 12px 24px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: transform 0.15s ease, filter 0.2s ease;
-}
-button.btn:hover {
-  filter: brightness(1.05);
-  transform: translateY(-2px);
-}
-
-/* Résultats */
-.result {
-  margin-top: 20px;
-  padding: 16px;
-  border-radius: 10px;
-  font-size: 1.1rem;
-  text-align: center;
-  font-weight: 600;
-}
-.result.ok {
-  background: #dcfce7;
-  color: #166534;
-}
-.result.ko {
-  background: #fee2e2;
-  color: #991b1b;
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
