@@ -1,29 +1,63 @@
-export default function App() {
-  return (
-    <div className="app-container">
-      {/* Titre principal */}
-      <h1 style={{
-        fontSize: "2rem",
-        fontWeight: "700",
-        marginBottom: "20px",
-        textAlign: "center",
-        background: "linear-gradient(90deg, #2563eb, #22c55e)",
-        WebkitBackgroundClip: "text",
-        color: "transparent"
-      }}>
-        Vérificateur BACS
-      </h1>
+import React, { useState } from "react";
+import "./index.css";
 
-      {/* Carte */}
-      <div style={{
-        background: "white",
-        borderRadius: "16px",
-        padding: "24px",
-        boxShadow: "0 4px 30px rgba(0,0,0,0.08)"
-      }}>
-        <p>Bienvenue dans l’outil de test du décret BACS. 🚀</p>
-        <p>Ici viendra le formulaire.</p>
+export default function App() {
+  const [surface, setSurface] = useState("");
+  const [assujetti, setAssujetti] = useState(null);
+
+  const checkAssujettissement = () => {
+    if (surface >= 1000) {
+      setAssujetti(true);
+    } else {
+      setAssujetti(false);
+    }
+  };
+
+  return (
+    <div className="page-bg">
+      <div className="app-container">
+        <h1 className="title">🚀 Vérificateur BACS</h1>
+
+        <div className="card">
+          <p className="intro">
+            Bienvenue dans l’outil de test du décret BACS. 
+            <span className="emoji">⚡</span>
+          </p>
+
+          {/* --- FORMULAIRE --- */}
+          <div className="form-row">
+            <div>
+              <label className="label">Surface du bâtiment (m²)</label>
+              <input
+                type="number"
+                value={surface}
+                onChange={(e) => setSurface(e.target.value)}
+                className="input"
+                placeholder="Ex : 1500"
+              />
+            </div>
+
+            <div>
+              <label className="label">Date de construction</label>
+              <input
+                type="date"
+                className="input"
+              />
+            </div>
+          </div>
+
+          <button onClick={checkAssujettissement} className="btn">
+            Vérifier l’assujettissement
+          </button>
+
+          {/* --- RESULTAT --- */}
+          {assujetti !== null && (
+            <div className={`result ${assujetti ? "ok" : "ko"}`}>
+              {assujetti ? "✅ Bâtiment assujetti au décret BACS" : "❌ Non assujetti"}
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  )
+  );
 }
