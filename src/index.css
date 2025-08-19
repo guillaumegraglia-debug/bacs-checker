@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Palette et petits composants utilitaires via Tailwind */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 font-medium transition;
+  }
+  .btn-primary {
+    @apply btn bg-blue-600 text-white hover:bg-blue-700 shadow;
+  }
+  .btn-ghost {
+    @apply btn bg-white text-slate-700 hover:bg-slate-50 border border-slate-200;
+  }
+  .input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  }
+  .select {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium text-slate-700;
+  }
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+  .badge-ok { @apply badge bg-green-100 text-green-700; }
+  .badge-warn { @apply badge bg-amber-100 text-amber-700; }
+  .badge-ko { @apply badge bg-rose-100 text-rose-700; }
+  .section-title {
+    @apply text-sm font-semibold uppercase tracking-wide text-slate-500;
+  }
+}
