@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import Input from "./components/Input";
 
 export default function BACSForm() {
   const [formData, setFormData] = useState({
@@ -105,9 +106,9 @@ export default function BACSForm() {
         {/* Partie gauche */}
         <div>
           <label className="block mb-2 font-medium">Nom du bâtiment</label>
-          <input
+          <Input
             type="text"
-            className="w-full p-2 border rounded mb-4"
+            className="mb-4"
             placeholder="Ex : Tour Alpha"
             value={formData.buildingName}
             onChange={(e) =>
@@ -149,10 +150,9 @@ export default function BACSForm() {
           ].map(({ key, label }) => (
             <div key={key} className="mb-4">
               <label className="block mb-2 font-medium">{label}</label>
-              <input
+              <Input
                 type="number"
                 inputMode="decimal"
-                className="w-full p-2 border rounded"
                 value={formData[key]}
                 onChange={(e) =>
                   setFormData({ ...formData, [key]: e.target.value })
@@ -254,9 +254,8 @@ export default function BACSForm() {
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <label className="block">
                     CAPEX (€/kW)
-                    <input
+                    <Input
                       type="number"
-                      className="w-full p-2 border rounded"
                       value={eco.capexPerKW}
                       onChange={(e) =>
                         setEco({ ...eco, capexPerKW: Number(e.target.value) })
@@ -266,9 +265,8 @@ export default function BACSForm() {
                   </label>
                   <label className="block">
                     Conso CVC (kWh/kW/an)
-                    <input
+                    <Input
                       type="number"
-                      className="w-full p-2 border rounded"
                       value={eco.cvcKwhPerKW}
                       onChange={(e) =>
                         setEco({ ...eco, cvcKwhPerKW: Number(e.target.value) })
@@ -278,10 +276,9 @@ export default function BACSForm() {
                   </label>
                   <label className="block">
                     Prix énergie (€/kWh)
-                    <input
+                    <Input
                       type="number"
                       step="0.01"
-                      className="w-full p-2 border rounded"
                       value={eco.energyPrice}
                       onChange={(e) =>
                         setEco({ ...eco, energyPrice: Number(e.target.value) })
@@ -291,9 +288,8 @@ export default function BACSForm() {
                   </label>
                   <label className="block">
                     Gain attendu (%)
-                    <input
+                    <Input
                       type="number"
-                      className="w-full p-2 border rounded"
                       value={eco.savingPct}
                       onChange={(e) =>
                         setEco({ ...eco, savingPct: Number(e.target.value) })
@@ -304,9 +300,8 @@ export default function BACSForm() {
                   </label>
                   <label className="block col-span-2">
                     Conso CVC réelle (kWh/an) (optionnel)
-                    <input
+                    <Input
                       type="number"
-                      className="w-full p-2 border rounded"
                       value={eco.knownCvcKwh}
                       onChange={(e) =>
                         setEco({ ...eco, knownCvcKwh: e.target.value })
