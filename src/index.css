@@ -1,88 +1,16 @@
-/* Reset de base */
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  font-family: "Segoe UI", Roboto, sans-serif;
-  background: linear-gradient(135deg, #2563eb, #22c55e, #9333ea);
-  background-size: 200% 200%;
-  animation: gradientMove 8s ease infinite;
-}
-
-/* Animation dégradé dynamique */
-@keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* Conteneur principal */
 .app-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 40px;
-  color: #1f2937;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;   /* prend toute la hauteur */
+  padding: 20px;
 }
 
-/* Carte blanche */
 .card {
   background: white;
   border-radius: 16px;
   padding: 30px;
-  margin-bottom: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  transition: transform 0.2s;
-}
-.card:hover {
-  transform: translateY(-5px);
-}
-
-/* Titres */
-h1, h2 {
-  text-align: center;
-  color: #111827;
-}
-
-/* Inputs */
-input {
+  max-width: 700px;
   width: 100%;
-  padding: 12px;
-  margin: 10px 0 20px 0;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 16px;
-}
-
-/* Boutons */
-button {
-  display: inline-block;
-  background: linear-gradient(90deg, #2563eb, #22c55e);
-  color: white;
-  font-weight: bold;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-button:hover {
-  background: linear-gradient(90deg, #1e40af, #15803d);
-}
-
-/* Résultat */
-.result {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 8px;
-  text-align: center;
-  font-weight: bold;
-  font-size: 18px;
-}
-.result.ok {
-  background: #dcfce7;
-  color: #166534;
-}
-.result.nok {
-  background: #fee2e2;
-  color: #991b1b;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
