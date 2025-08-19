@@ -1,9 +1,15 @@
 import React from "react";
 
-export default function Input({ className = "", ...props }) {
+export default function Input({ type = "text", className = "", ...props }) {
+  const baseClasses =
+    type === "checkbox"
+      ? "mr-2 focus:ring-2 focus:ring-blue-500"
+      : "w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500";
+
   return (
     <input
-      className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+      type={type}
+      className={`${baseClasses} ${className}`}
       {...props}
     />
   );
