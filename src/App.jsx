@@ -94,10 +94,10 @@ export default function BACSForm() {
 
   return (
     <div className="max-w-4xl w-full mx-auto p-6 bg-white shadow-xl rounded-2xl">
-      <h1 className="text-2xl font-bold mb-1">
+      <h1 className="text-2xl font-bold mb-1 text-primary">
         Vérifiez si votre bâtiment est concerné par le décret BACS
       </h1>
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-sm text-secondary mb-6">
         Module 1 (éligibilité) + Module 2 (diagnostic détaillé).
       </p>
 
@@ -327,14 +327,14 @@ export default function BACSForm() {
                       {roiYears === Infinity ? "—" : roiYears.toFixed(1)} an(s)
                     </strong>{" "}
                     {roiYears > 10 && (
-                      <span className="text-amber-600">(> 10 ans)</span>
+                      <span className="text-amber-600">(&gt; 10 ans)</span>
                     )}
                   </p>
                 </div>
               </div>
 
               {/* Plan d’actions */}
-              <div className="mb-4 p-3 bg-white border rounded">
+              <div className="mb-4 p-3 bg-secondary/10 border border-secondary/40 rounded">
                 <p className="font-semibold mb-1">Plan d’actions recommandé</p>
                 <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
                   <li>Audit express : points de comptage, segmentation des zones, relevé protocoles existants.</li>
