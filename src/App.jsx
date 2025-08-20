@@ -1,5 +1,8 @@
 import React, { useMemo, useState } from "react";
 import Input from "./components/Input";
+import Button from "./components/Button";
+import ReportModal from "./components/ReportModal";
+import { generateReport } from "./services/reportGenerator";
 
 export default function BACSForm() {
   const [formData, setFormData] = useState({
@@ -45,6 +48,10 @@ export default function BACSForm() {
     savingPct: 15, // % d'économie CVC
     knownCvcKwh: "", // conso CVC réelle si connue (kWh/an)
   });
+
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportText, setReportText] = useState("");
+  const [loadingReport, setLoadingReport] = useState(false);
 
   // Estimation de conso CVC annuelle (kWh/an)
   const cvcKwhYear = useMemo(() => {
@@ -103,6 +110,47 @@ export default function BACSForm() {
         text: "Assujetti : décret BACS applicable.",
         color: "bg-success text-white",
       };
+
+  const handleGenerateReport = async () => {
+    const reportData = {
+      formData,
+      totalPower,
+      assujetti,
+      echeance,
+      statut: statut.text,
+      gtb: { currentClass, requiredClass, classUpgrade },
+      eco: {
+        cvcKwhYear,
+        capex,
+        annualSavingEuro,
+        roiYears,
+      },
+      planActions: [
+        "Audit express : points de comptage, segmentation des zones, relevé protocoles existants.",
+        "Cadrage GTB : exigences classe B, fonctionnalités arrêtées, interopérabilité (BACnet/KNX/Modbus).",
+        "Spécifications & CCTP : architecture, bus, cybersécurité, recette & KPIs.",
+        "Déploiement par zones, réglages, formation exploitation.",
+        "Suivi de performance (3–6 mois), ajustements fins.",
+      ],
+      derogations: {
+        possible: derogationPossible,
+        roi: derogationByROI,
+        technical: derogationByTech,
+        heritage: derogationByHeritage,
+      },
+    };
+
+    try {
+      setLoadingReport(true);
+      const text = await generateReport(reportData);
+      setReportText(text || "");
+      setReportModalOpen(true);
+    } catch (e) {
+      alert("Erreur lors de la génération du rapport");
+    } finally {
+      setLoadingReport(false);
+    }
+  };
 
   return (
     <div className="max-w-4xl w-full mx-auto p-6 bg-white/90 border-2 border-primary/20 shadow-xl rounded-2xl">
@@ -392,8 +440,20 @@ export default function BACSForm() {
               )}
             </>
           )}
+          <Button
+            className="mt-4"
+            onClick={handleGenerateReport}
+            disabled={loadingReport}
+          >
+            {loadingReport ? "Génération..." : "Générer le rapport"}
+          </Button>
         </div>
       </div>
+      <ReportModal
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        text={reportText}
+      />
     </div>
   );
 }
