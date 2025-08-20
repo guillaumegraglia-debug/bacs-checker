@@ -3,8 +3,7 @@
 @tailwind utilities;
 
 body {
-  background-color: theme('colors.gray.50');
-  color: theme('colors.gray.800');
+  @apply bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 text-secondary;
   font-family: theme('fontFamily.sans');
 }
 

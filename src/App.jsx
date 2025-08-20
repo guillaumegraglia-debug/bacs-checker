@@ -85,15 +85,27 @@ export default function BACSForm() {
   const derogationPossible =
     assujetti && (derogationByROI || derogationByTech || derogationByHeritage);
 
-  // Messages statut
-  const statutMessage = !isTertiaire
-    ? "❌ Non assujetti : bâtiment non tertiaire."
+  // Messages statut avec couleurs et icônes
+  const statut = !isTertiaire
+    ? {
+        icon: "🚫",
+        text: "Non assujetti : bâtiment non tertiaire.",
+        color: "bg-danger text-white",
+      }
     : totalPower <= 290
-    ? "❌ Non assujetti : puissance totale ≤ 290 kW."
-    : "✅ Assujetti : décret BACS applicable.";
+    ? {
+        icon: "⚡",
+        text: "Non assujetti : puissance totale ≤ 290 kW.",
+        color: "bg-danger text-white",
+      }
+    : {
+        icon: "✅",
+        text: "Assujetti : décret BACS applicable.",
+        color: "bg-success text-white",
+      };
 
   return (
-    <div className="max-w-4xl w-full mx-auto p-6 bg-white shadow-xl rounded-2xl">
+    <div className="max-w-4xl w-full mx-auto p-6 bg-white/90 border-2 border-primary/20 shadow-xl rounded-2xl">
       <h1 className="text-2xl font-bold mb-1 text-primary">
         Vérifiez si votre bâtiment est concerné par le décret BACS
       </h1>
@@ -105,7 +117,7 @@ export default function BACSForm() {
       <div className="grid md:grid-cols-2 gap-6">
         {/* Partie gauche */}
         <div>
-          <label className="block mb-2 font-medium">Nom du bâtiment</label>
+          <label className="block mb-2 font-medium">🏢 Nom du bâtiment</label>
           <Input
             type="text"
             className="mb-4"
@@ -116,7 +128,7 @@ export default function BACSForm() {
             }
           />
 
-          <label className="block mb-2 font-medium">Type de bâtiment</label>
+          <label className="block mb-2 font-medium">🏷️ Type de bâtiment</label>
           <select
             className="w-full p-2 border rounded mb-4"
             value={formData.buildingType}
@@ -129,7 +141,7 @@ export default function BACSForm() {
             <option value="autre">Autre</option>
           </select>
 
-          <label className="block mb-2 font-medium">Date de construction</label>
+          <label className="block mb-2 font-medium">📅 Date de construction</label>
           <select
             className="w-full p-2 border rounded mb-4"
             value={formData.constructionDate}
@@ -143,10 +155,10 @@ export default function BACSForm() {
           </select>
 
           {[ 
-            { key: "heating", label: "Chauffage (kW)" },
-            { key: "cooling", label: "Climatisation (kW)" },
-            { key: "ventilation", label: "Ventilation (kW)" },
-            { key: "ecs", label: "ECS couplée (kW) - optionnel" },
+            { key: "heating", label: "🔥 Chauffage (kW)" },
+            { key: "cooling", label: "❄️ Climatisation (kW)" },
+            { key: "ventilation", label: "💨 Ventilation (kW)" },
+            { key: "ecs", label: "🚿 ECS couplée (kW) - optionnel" },
           ].map(({ key, label }) => (
             <div key={key} className="mb-4">
               <label className="block mb-2 font-medium">{label}</label>
@@ -164,10 +176,10 @@ export default function BACSForm() {
           ))}
 
           <p className="mb-4 font-semibold">
-            Puissance totale : {isNaN(totalPower) ? "-" : totalPower} kW
+            🔋 Puissance totale : {isNaN(totalPower) ? "-" : totalPower} kW
           </p>
 
-          <label className="block mb-2 font-medium">Situations particulières</label>
+          <label className="block mb-2 font-medium">⚠️ Situations particulières</label>
           <div className="mb-4 space-y-1">
             <label className="block">
               <Input
@@ -177,7 +189,7 @@ export default function BACSForm() {
                   setFormData({ ...formData, heritage: e.target.checked })
                 }
               />
-              Bâtiment classé / patrimoine
+              🏛️ Bâtiment classé / patrimoine
             </label>
             <label className="block">
               <Input
@@ -187,7 +199,7 @@ export default function BACSForm() {
                   setFormData({ ...formData, technicalIssue: e.target.checked })
                 }
               />
-              Impossibilité technique
+              🛠️ Impossibilité technique
             </label>
             <label className="block">
               <Input
@@ -197,11 +209,11 @@ export default function BACSForm() {
                   setFormData({ ...formData, roi: e.target.checked })
                 }
               />
-              ROI estimé &gt; 10 ans (déclaratif)
+              💰 ROI estimé &gt; 10 ans (déclaratif)
             </label>
           </div>
 
-          <label className="block mb-2 font-medium">Système GTB existant</label>
+          <label className="block mb-2 font-medium">🧠 Système GTB existant</label>
           <select
             className="w-full p-2 border rounded mb-6"
             value={formData.gtb}
@@ -218,9 +230,12 @@ export default function BACSForm() {
         </div>
 
         {/* Partie droite - Diagnostic */}
-        <div className="p-4 border rounded-lg bg-gray-50">
-          <h2 className="text-lg font-bold mb-2">Diagnostic automatique</h2>
-          <p className="mb-2">{statutMessage}</p>
+        <div className="p-4 border border-secondary/20 rounded-lg bg-secondary/5">
+          <h2 className="text-lg font-bold mb-2">🩺 Diagnostic automatique</h2>
+          <p className={`mb-2 p-2 rounded flex items-center ${statut.color}`}>
+            <span className="mr-2">{statut.icon}</span>
+            {statut.text}
+          </p>
 
           {assujetti && (
             <>
@@ -250,7 +265,7 @@ export default function BACSForm() {
 
               {/* Mini-éco */}
               <div className="mb-4 p-3 bg-white border rounded">
-                <p className="font-semibold mb-2">Mini-éco (paramétrable)</p>
+                <p className="font-semibold mb-2">💡 Mini-éco (paramétrable)</p>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <label className="block">
                     CAPEX (€/kW)
@@ -335,7 +350,7 @@ export default function BACSForm() {
 
               {/* Plan d’actions */}
               <div className="mb-4 p-3 bg-secondary/10 border border-secondary/40 rounded">
-                <p className="font-semibold mb-1">Plan d’actions recommandé</p>
+                <p className="font-semibold mb-1">📝 Plan d’actions recommandé</p>
                 <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
                   <li>Audit express : points de comptage, segmentation des zones, relevé protocoles existants.</li>
                   <li>Cadrage GTB : exigences <strong>classe B</strong>, fonctionnalités arrêtées, interopérabilité (BACnet/KNX/Modbus).</li>
@@ -349,7 +364,7 @@ export default function BACSForm() {
               {derogationPossible && (
                 <div className="p-3 border rounded bg-amber-50">
                   <p className="font-semibold text-amber-700">
-                    Dérogation potentielle
+                    ⚖️ Dérogation potentielle
                   </p>
                   <ul className="list-disc list-inside text-sm text-amber-800">
                     {derogationByROI && (
